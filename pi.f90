@@ -22,17 +22,15 @@ contains
 
     function sequential_monte_carlo(trials) result(ret)
         integer(i64), intent(in) :: trials
-        real(dp) :: ret, total, x(2)
+        real(dp) :: ret, tot, x(2)
         integer(i64) :: i
 
-        total = 1._dp
+        tot = 0._dp
         do i = 1_i64, trials
             call random_number(x)
-            if (in_the_circle(x)) then
-                total = total + 1._dp
-            end if
+            if (in_the_circle(x)) tot = tot + 1._dp
         end do
-        ret = 4._dp*total/trials
+        ret = 4._dp*tot/trials
     end function sequential_monte_carlo
 
     function parallel_monte_carlo(trials) result(ret)
@@ -43,7 +41,6 @@ contains
 
         allocate (tot[*])
         if (mod(trials, num_images()) /= 0_i64) stop
-
         tot = 0._dp
         do i = 1_i64, trials/num_images()
             call random_number(x)
