@@ -54,16 +54,17 @@ contains
 
 end module monte_carlo_m
 
-program main
+program monte_carlo_pi
 
     use monte_carlo_m
     implicit none
 
     real(dp), parameter :: pi = 3.141592653589_dp
     real(dp) :: ans_(2), clock_(2), time_(2)
+    integer(i64), parameter :: scale = 10**7
     integer(i64) :: trials
 
-    trials = 100000000_i64
+    trials = scale*num_images()
     call cpu_time(clock_(1))
     ans_(1) = parallel_monte_carlo(trials)
     call cpu_time(clock_(2))
@@ -98,4 +99,4 @@ contains
         percent_err = abs(val - pi)/pi*100._dp
     end function percent_err
 
-end program main
+end program monte_carlo_pi
