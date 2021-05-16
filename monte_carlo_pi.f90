@@ -20,19 +20,6 @@ contains
         if (radius <= unit) ret = .true.
     end function in_the_circle
 
-    function sequential_monte_carlo(trials) result(ret)
-        integer(i64), intent(in) :: trials
-        real(dp) :: ret, tot, x(2)
-        integer(i64) :: i
-
-        tot = 0._dp
-        do i = 1_i64, trials
-            call random_number(x)
-            if (in_the_circle(x)) tot = tot + 1._dp
-        end do
-        ret = 4._dp*tot/trials
-    end function sequential_monte_carlo
-
     function parallel_monte_carlo(trials) result(ret)
         integer(i64), intent(in) :: trials
         real(dp) :: ret, x(2)
@@ -60,22 +47,14 @@ program monte_carlo_pi
     implicit none
 
     real(dp), parameter :: pi = 3.141592653589_dp
-    real(dp) :: ans_(2), clock_(2), time_(2)
-    integer(i64), parameter :: scale = 10**7
+    integer(i64), parameter :: scale = 10**9
+    real(dp) :: answer, t(2)
     integer(i64) :: trials
 
     trials = scale*num_images()
-    call cpu_time(clock_(1))
-    ans_(1) = parallel_monte_carlo(trials)
-    call cpu_time(clock_(2))
-    time_(1) = clock_(2) - clock_(1)
-
-    if (this_image() == 1) then
-        call cpu_time(clock_(1))
-        ans_(2) = sequential_monte_carlo(trials)
-        call cpu_time(clock_(2))
-        time_(2) = clock_(2) - clock_(1)
-    end if
+    call cpu_time(t(1))
+    answer = parallel_monte_carlo(trials)
+    call cpu_time(t(2))
 
     if (this_image() == 1) then
         print "(a)", "======================="
@@ -83,12 +62,9 @@ program monte_carlo_pi
         print "(a)", "======================="
         print "('trials  = ', i13)", trials
         print "('cores   = ', i13)", num_images()
-        print "('t_par   = ', f11.4, ' s')", time_(1)
-        print "('t_seq   = ', f11.4, ' s')", time_(2)
-        print "('pi_par  = ', f13.8)", ans_(1)
-        print "('pi_seq  = ', f13.8)", ans_(2)
-        print "('err_par = ', f12.8, '%')", percent_err(ans_(1))
-        print "('err_seq = ', f12.8, '%')", percent_err(ans_(2))
+        print "('tspan   = ', f11.4, ' s')", t(2) - t(1)
+        print "('pi_cal  = ', f13.8)", answer
+        print "('error   = ', f12.8, '%')", percent_err(answer)
     end if
 
 contains
