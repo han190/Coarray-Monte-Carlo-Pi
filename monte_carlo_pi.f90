@@ -3,9 +3,9 @@ module monte_carlo_m
     use iso_fortran_env, only: int64, real64
     implicit none
 
+    private
     integer, public, parameter :: i64 = int64, dp = real64
-    public :: sequential_monte_carlo, parallel_monte_carlo
-    private :: in_the_circle
+    public :: parallel_monte_carlo
 
 contains
 
