@@ -9,34 +9,39 @@ module monte_carlo_m
 
 contains
 
-    pure function in_the_circle(x) result(ret)
+    pure function in_circle(x) result(ret)
         real(dp), intent(in) :: x(2)
         logical :: ret
         real(dp) :: radius
-        real(dp), parameter :: unit = 1._dp
 
         radius = sqrt(x(1)**2 + x(2)**2)
         ret = .false.
-        if (radius <= unit) ret = .true.
-    end function in_the_circle
+        if (radius <= 1._dp) ret = .true.
+    end function in_circle
 
     function parallel_monte_carlo(trials) result(ret)
         integer(i64), intent(in) :: trials
-        real(dp) :: ret, x(2)
-        integer(i64) :: i
-        real(dp), allocatable :: tot[:]
+        real(dp) :: ret
+        real(dp) :: x(2)
+        integer(i64) :: idx, total, njob, nrem
 
-        allocate (tot[*])
-        if (mod(trials, num_images()) /= 0_i64) stop
-        tot = 0._dp
-        do i = 1_i64, trials/num_images()
+        total = 0_i64
+        njob = trials/num_images()
+        do idx = (this_image() - 1)*njob + 1, this_image()*njob
             call random_number(x)
-            if (in_the_circle(x)) tot = tot + 1._dp
+            if (in_circle(x)) total = total + 1_i64
         end do
-        sync all
 
-        call co_sum(tot)
-        ret = 4._dp*tot[1]/trials
+        nrem = mod(trials, num_images())
+        if (nrem /= 0 .and. this_image() <= nrem) then
+            idx = num_images()*njob + this_image()
+            call random_number(x)
+            if (in_circle(x)) total = total + 1_i64
+        end if
+
+        sync all
+        call co_sum(total, result_image=1)
+        if (this_image() == 1) ret = 4._dp*total/trials
     end function parallel_monte_carlo
 
 end module monte_carlo_m
@@ -47,11 +52,9 @@ program monte_carlo_pi
     implicit none
 
     real(dp), parameter :: pi = 3.141592653589_dp
-    integer(i64), parameter :: scale = 10**9
     real(dp) :: answer, t(2)
-    integer(i64) :: trials
+    integer(i64), parameter :: trials = 10**7
 
-    trials = scale*num_images()
     call cpu_time(t(1))
     answer = parallel_monte_carlo(trials)
     call cpu_time(t(2))
