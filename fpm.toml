@@ -1,0 +1,14 @@
+name = "Coarray-Monte-Carlo-Pi"
+version = "0.0.1"
+license = "MIT"
+maintainer = "htang2@alaska.edu"
+author = "Han Tang"
+copyright = "Copyright 2019-2021 Han Tang"
+description = "Very simple example for testing coarray functionality."
+keywords = ["Fortran", "Modern-Fortran", "Coarray"]
+homepage = "https://github.com/han190/Coarray-Monte-Carlo-Pi"
+
+[[ executable ]]
+name = "monte_carlo_pi"
+source-dir = "src"
+main = "monte_carlo_pi.f90"
