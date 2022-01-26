@@ -33,7 +33,7 @@ contains
     pure logical function in_circle(x)
         real(dp), intent(in) :: x(2)
 
-        in_circle = merge(.true., .false., sqrt(sum(x*x)) <= unit)
+        in_circle = sqrt(sum(x*x)) <= unit
     end function in_circle
 
     real(dp) function monte_carlo(num_trials)
